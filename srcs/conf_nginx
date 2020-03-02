@@ -1,0 +1,46 @@
+server {
+# ecoute de port ipv4
+    listen 80 ; 			#HTTP
+    listen 443 default ssl;		#HTTPS
+
+# ecoute de port ipv6
+    listen [::]:80 default_server;	#HTTP
+    listen [::]:443 ssl;		#HTTPS
+
+# active ssl
+    ssl on;
+# Protocoles de securite
+    ssl_protocols        SSLv3 TLSv1;
+# Methodes de chiffrement 
+    ssl_ciphers          "HIGH:!aNULL:!MD5";
+# chaine complete de certification
+    ssl_certificate      /etc/ssl/certs/nginx-selfsigned.crt;
+# cle privee du certificat SSL du domaine
+    ssl_certificate_key  /etc/ssl/private/nginx-selfsigned.key;
+
+# redirection error 400 page
+    error_page		497	https://$server_name:443$request_uri;
+
+    root /var/www;
+    index index.php index.html index.htm;
+
+    server_name localhost;
+
+    location / {
+        autoindex on;
+    }
+
+    location /wordpress {
+        alias  /var/www/wordpress;
+    }
+
+    location  /phpmyadmin {
+        alias  /var/www/phpmyadmin;
+    }
+
+# communication entre un serveur HTTP et PHP script
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+    }
+}
